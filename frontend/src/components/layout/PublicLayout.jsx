@@ -12,7 +12,7 @@ export default function PublicLayout() {
           <Outlet />
         </main>
         <footer className="border-t border-zinc-200 dark:border-zinc-800 py-6 text-center text-xs text-zinc-400">
-          Data: Badan Pusat Statistik Kabupaten Jember &mdash; 2024
+          By Matrix &mdash; 202
         </footer>
       </div>
     </ToastProvider>

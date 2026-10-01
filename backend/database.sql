@@ -1,8 +1,3 @@
--- ============================================================
--- Database: jember_db
--- Jalankan file ini sekali untuk setup + migrasi awal.
--- ============================================================
-
 CREATE DATABASE IF NOT EXISTS jember_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE jember_db;
 
