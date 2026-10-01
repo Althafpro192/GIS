@@ -1,0 +1,62 @@
+/* Global design tokens dan base styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-accent: #16a34a;
+    --color-amber: #f59e0b;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-zinc-50 text-zinc-900 font-sans antialiased;
+    @apply dark:bg-zinc-950 dark:text-zinc-100;
+  }
+
+  h1, h2, h3 {
+    @apply font-serif;
+  }
+
+  /* Focus ring global */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-jember-600 ring-offset-2;
+    @apply dark:ring-jember-400 dark:ring-offset-zinc-950;
+  }
+}
+
+@layer components {
+  /* Skeleton loader */
+  .skeleton {
+    @apply animate-pulse rounded bg-zinc-200 dark:bg-zinc-800;
+  }
+
+  /* Card base */
+  .card {
+    @apply bg-white border border-zinc-200 rounded-lg shadow-card;
+    @apply dark:bg-zinc-900 dark:border-zinc-800;
+  }
+
+  /* Subtle divider */
+  .divider {
+    @apply border-t border-zinc-200 dark:border-zinc-800;
+  }
+}
+
+@layer utilities {
+  /* Transition cepat 150ms */
+  .transition-fast {
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Leaflet overrides — agar z-index tidak bentrok dengan sidebar */
+.leaflet-pane        { z-index: 1 !important; }
+.leaflet-control     { z-index: 10 !important; }
+.leaflet-top,
+.leaflet-bottom      { z-index: 10 !important; }
