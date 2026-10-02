@@ -120,3 +120,143 @@ VITE_GEOJSON_URL=http://localhost/GIS/backend/jember_kecamatan.geojson
 - CSRF token di-generate server dan dikirim di header `X-CSRF-Token`
 - Session cookie tidak diekspos ke JavaScript (`httpOnly` via PHP session)
 - Error message server tidak membocorkan informasi sensitif
+
+---
+
+## 🐳 Deployment dengan Docker (Dokploy)
+
+### Prasyarat
+
+- Docker Engine 20.10+
+- Docker Compose v2.0+
+- Git
+
+### Struktur Docker Files
+
+```
+GIS/
+├── Dockerfile              # PHP-FPM Backend
+├── docker-compose.yml     # Development
+├── docker-compose.prod.yml # Production (Dokploy)
+├── .dockerignore
+├── frontend/
+│   ├── Dockerfile
+│   └── nginx.conf
+└── backend/
+```
+
+### Development (Local)
+
+```bash
+# Build dan run semua services
+docker-compose up -d --build
+
+# Lihat logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+Aplikasi dapat diakses di: **http://localhost**
+
+### Production (Dokploy)
+
+1. **Push ke Git Repository**
+   ```bash
+   git add .
+   git commit -m "Add Docker configuration for Dokploy"
+   git push origin main
+   ```
+
+2. **Setup di Dokploy**
+   - Buka Dokploy Dashboard
+   - Buat **Project** baru
+   - Buat **Server** (vPS/Docker host)
+   - Buat **Compose** deployment
+   
+3. **Konfigurasi Environment Variables**
+   Tambahkan environment variables di Dokploy:
+   ```
+   DB_HOST=db
+   DB_USER=root
+   DB_PASSWORD=tefa2025bisa
+   DB_NAME=jember_db
+   ```
+
+4. **Deploy**
+   - Pilih repository
+   - Pilih branch (main/master)
+   - Dokploy akan auto-build dan deploy menggunakan `docker-compose.prod.yml`
+
+### Services
+
+| Service | Port | Deskripsi |
+|---------|------|-----------|
+| `frontend` | 80, 443 | Nginx + React static files |
+| `backend` | 9000 | PHP-FPM |
+| `db` | 3306 | MySQL 8.0 |
+
+### Troubleshooting
+
+**Container tidak start:**
+```bash
+# Cek logs
+docker-compose logs backend
+docker-compose logs db
+
+# Rebuild tanpa cache
+docker-compose build --no-cache
+```
+
+**Database connection error:**
+- Pastikan service `db` sudah healthy
+- Cek environment variables
+- Tunggu sampai MySQL fully initialized
+
+**Frontend 502/504 error:**
+- Pastikan PHP-FPM container running
+- Cek nginx configuration
+
+### Default Credentials
+
+| Service | Username | Password |
+|---------|----------|----------|
+| Admin Panel | `admin` | `Admin123!` |
+| MySQL Root | `root` | `tefa2025bisa` |
+
+---
+
+## 📁 Struktur File Docker
+
+### Dockerfile (Backend)
+```dockerfile
+FROM php:8.2-fpm
+# Install extensions: pdo_mysql, mbstring, gd, zip
+# Copy backend files
+# Expose port 9000
+```
+
+### frontend/Dockerfile
+```dockerfile
+# Build stage: Node 18 + Vite build
+# Production stage: Nginx Alpine
+# Copy nginx.conf for routing
+```
+
+### docker-compose.yml
+```yaml
+services:
+  db:      mysql:8.0
+  backend: php:8.2-fpm
+  frontend: nginx:alpine
+```
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DB_HOST` | `db` | MySQL host |
+| `DB_USER` | `root` | MySQL user |
+| `DB_PASSWORD` | `tefa2025bisa` | MySQL password |
+| `DB_NAME` | `jember_db` | Database name |
