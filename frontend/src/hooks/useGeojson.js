@@ -1,26 +1,47 @@
-// Hook untuk fetch GeoJSON batas kecamatan Jember.
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+
+let cachedGeojson = null
 
 export function useGeojson() {
-  const [geojson, setGeojson] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [geojson, setGeojson] = useState(cachedGeojson)
+  const [loading, setLoading] = useState(!cachedGeojson)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    async function load() {
-      try {
-        const url = import.meta.env.VITE_GEOJSON_URL
-        const res = await fetch(url)
-        if (!res.ok) throw new Error('GeoJSON gagal dimuat.')
-        const data = await res.json()
-        setGeojson(data)
-      } catch (err) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
-      }
+    if (cachedGeojson) {
+      setGeojson(cachedGeojson)
+      setLoading(false)
+      return
     }
-    load()
+
+    let cancelled = false
+
+    fetch('/jember_kecamatan.geojson')
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('HTTP ' + res.status)
+        }
+        return res.json()
+      })
+      .then((json) => {
+        if (cancelled) return
+        console.log('[useGeojson] features:', json.features.length)
+        cachedGeojson = json
+        setGeojson(json)
+        setError(null)
+      })
+      .catch((err) => {
+        if (cancelled) return
+        console.error('[useGeojson] error:', err)
+        setError(err)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   return { geojson, loading, error }

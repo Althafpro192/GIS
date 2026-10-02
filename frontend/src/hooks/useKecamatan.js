@@ -1,5 +1,4 @@
-// Hook untuk fetch dan cache data kecamatan dari API.
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import api from '@/lib/api'
 
 export function useKecamatan() {
@@ -7,22 +6,30 @@ export function useKecamatan() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const fetch = useCallback(async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const res = await api.get('/kecamatan.php')
-      setData(res.data.data || [])
-    } catch (err) {
-      setError(err.response?.data?.message || 'Gagal memuat data.')
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    let cancelled = false
+
+    api.get('/kecamatan.php')
+      .then((res) => {
+        if (cancelled) return
+        console.log('[useKecamatan] raw:', res.data)
+        const rows = Array.isArray(res.data) ? res.data : (res.data && res.data.data) || []
+        console.log('[useKecamatan] rows:', rows.length)
+        setData(rows)
+      })
+      .catch((err) => {
+        if (cancelled) return
+        console.error('[useKecamatan] error:', err)
+        setError(err)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
     }
   }, [])
 
-  useEffect(() => {
-    fetch()
-  }, [fetch])
-
-  return { data, loading, error, refetch: fetch }
+  return { data, loading, error }
 }

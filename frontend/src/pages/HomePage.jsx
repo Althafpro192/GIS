@@ -1,5 +1,5 @@
 // Halaman publik utama — hero, stat cards, peta, grafik, tabel.
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { Users, TrendingUp, TrendingDown, MapPin } from 'lucide-react'
 import { useKecamatan } from '@/hooks/useKecamatan'
 import { useGeojson } from '@/hooks/useGeojson'
@@ -39,8 +39,8 @@ const CHART_OPTIONS = [
 ]
 
 export default function HomePage() {
-  const { data, loading } = useKecamatan()
-  const { geojson } = useGeojson()
+  const { data, loading, error } = useKecamatan()
+  const { geojson, loading: geoLoading, error: geoError } = useGeojson()
   const [mapMode, setMapMode] = useState('penduduk')
   const [chartMode, setChartMode] = useState('penduduk')
   const [hoveredKec, setHoveredKec] = useState(null)
@@ -56,6 +56,15 @@ export default function HomePage() {
     () => [...data].sort((a, b) => b.laju_pertumbuhan - a.laju_pertumbuhan),
     [data],
   )
+
+  // ⚠️ WAJIB useCallback — biar MapView tidak re-render tiap parent render
+  const handleHover = useCallback((kec) => setHoveredKec(kec), [])
+
+  // Debug log — hapus setelah fix terkonfirmasi
+  console.log('[HomePage] data:', data?.length,
+    '| geojson features:', geojson?.features?.length,
+    '| loading:', loading, geoLoading,
+    '| error:', error?.message, geoError?.message)
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col gap-10">
@@ -131,7 +140,7 @@ export default function HomePage() {
               geojson={geojson}
               data={data}
               mode={mapMode}
-              onHover={setHoveredKec}
+              onHover={handleHover}
             />
             <InfoPanel kecamatan={hoveredKec} />
           </div>
