@@ -45,7 +45,7 @@ services:
     expose:
       - "9000"
 
-  # Nginx Frontend
+  # React Frontend (Development)
   frontend:
     build:
       context: ./frontend
@@ -53,11 +53,10 @@ services:
     container_name: gis-frontend
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "5173:5173"
     volumes:
-      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./backend:/var/www/html/backend:ro
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
     networks:
